@@ -10032,10 +10032,10 @@ def warn_receiver_forward_class : Warning<
   InGroup<ForwardClassReceiver>;
 def note_method_sent_forward_class : Note<"method %0 is used for the forward class">;
 def ext_missing_type_specifier : ExtWarn<
-  "type specifier missing, defaults to 'int'; ISO C99 and later do not support "
-  "implicit int">, InGroup<ImplicitInt>, DefaultError;
-def err_missing_type_specifier : Error<
-  "a type specifier is required for all declarations">;
+  "type specifier missing, defaults to 'int'">,
+  InGroup<ImplicitInt>;
+def ext_missing_type_error : Error<
+  "type specifier missing">;
 def err_decimal_unsupported : Error<
   "GNU decimal type extension not supported">;
 def err_objc_array_of_interfaces : Error<

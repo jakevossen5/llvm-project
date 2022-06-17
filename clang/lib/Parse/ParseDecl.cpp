@@ -5967,6 +5967,10 @@ void Parser::ParseDeclaratorInternal(Declarator &D,
   D.SetRangeEnd(Loc);
 
   if (Kind == tok::star || Kind == tok::caret) {
+    // bool only_pr = Tok.is(tok::r_paren);
+    if (Tok.is(tok::r_paren)) {
+      return; // likely error
+    }
     // Is a pointer.
     DeclSpec DS(AttrFactory);
 
@@ -7080,6 +7084,7 @@ void Parser::ParseParameterDeclarationClause(
             !Actions.isUnexpandedParameterPackPermitted())) &&
           Actions.containsUnexpandedParameterPacks(ParmDeclarator))
         DiagnoseMisplacedEllipsisInDeclarator(ConsumeToken(), ParmDeclarator);
+
 
       // Now we are at the point where declarator parsing is finished.
       //

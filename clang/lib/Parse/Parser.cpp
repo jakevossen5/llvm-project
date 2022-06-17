@@ -1209,9 +1209,8 @@ Decl *Parser::ParseFunctionDefinition(ParsingDeclarator &D,
   // If this is C89 and the declspecs were completely missing, fudge in an
   // implicit int.  We do this here because this is the only place where
   // declaration-specifiers are completely optional in the grammar.
-  if (getLangOpts().isImplicitIntRequired() && D.getDeclSpec().isEmpty()) {
-    Diag(D.getIdentifierLoc(), diag::warn_missing_type_specifier)
-        << D.getDeclSpec().getSourceRange();
+  // TODO if we breakpoint here we might have a probelm
+  if (getLangOpts().ImplicitInt && D.getDeclSpec().isEmpty()) {
     const char *PrevSpec;
     unsigned DiagID;
     const PrintingPolicy &Policy = Actions.getASTContext().getPrintingPolicy();

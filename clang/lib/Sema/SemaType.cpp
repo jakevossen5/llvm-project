@@ -1261,6 +1261,11 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
   Declarator &declarator = state.getDeclarator();
   DeclSpec &DS = declarator.getMutableDeclSpec();
   SourceLocation DeclLoc = declarator.getIdentifierLoc();
+
+  // auto ix = state.chunkIndex
+
+  bool isFunctionArgDecl = declarator.getContext() == DeclaratorContext::Prototype;
+
   if (DeclLoc.isInvalid())
     DeclLoc = DS.getBeginLoc();
 
@@ -1338,10 +1343,16 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
     // allowed to be completely missing a declspec.  This is handled in the
     // parser already though by it pretending to have seen an 'int' in this
     // case.
-    if (S.getLangOpts().isImplicitIntRequired()) {
-      S.Diag(DeclLoc, diag::warn_missing_type_specifier)
-          << DS.getSourceRange()
-          << FixItHint::CreateInsertion(DS.getBeginLoc(), "int");
+    if (S.getLangOpts().ImplicitInt) {
+      // In C89 mode, we only warn if there is a completely missing declspec
+      // when one is not allowed.
+      if (DS.isEmpty() && !isFunctionArgDecl) { 
+        S.Diag(DeclLoc, diag::ext_missing_declspec)
+            << DS.getSourceRange()
+            << FixItHint::CreateInsertion(DS.getBeginLoc(), "int");
+      } else if (isFunctionArgDecl) {
+         S.Diag(DeclLoc, diag::ext_missing_type_error) << DS.getSourceRange();
+      }
     } else if (!DS.hasTypeSpecifier()) {
       // C99 and C++ require a type specifier.  For example, C99 6.7.2p2 says:
       // "At least one type specifier shall be given in the declaration
@@ -1360,6 +1371,8 @@ static QualType ConvertDeclSpecToType(TypeProcessingState &state) {
         S.Diag(DeclLoc, diag::err_missing_actual_pipe_type)
             << DS.getSourceRange();
         declarator.setInvalidType(true);
+      } else if (DS.isEmpty() && isFunctionArgDecl) {
+        S.Diag(DeclLoc, diag::ext_missing_type_error) << DS.getSourceRange();
       } else {
         assert(S.getLangOpts().isImplicitIntAllowed() &&
                "implicit int is disabled?");
